@@ -1,0 +1,142 @@
+id: SCN-002
+title: Password spraying to lateral movement
+version: '1.0'
+attack_version: '19.2'
+level: intermediate
+audience: blue-team
+duration_minutes: 105
+objectives:
+- 'Detect, contain and harden against activity across: Credential Access, Discovery, Lateral Movement'
+- Map each observed event to its ATT&CK technique (T1110.003, T1087.002, T1135, T1021.001, T1021.002)
+tags:
+- credential-access
+- discovery
+- lateral-movement
+- small-enterprise
+environment:
+  preset: small-enterprise
+  segments:
+  - name: internet
+    hosts:
+    - name: attacker
+      os: Linux
+      role: attacker
+  - name: dmz
+    hosts:
+    - name: web01
+      os: Linux
+      role: web-server
+    - name: mail01
+      os: Windows
+      role: mail-server
+  - name: corp-lan
+    hosts:
+    - name: ws01
+      os: Windows
+      role: workstation
+    - name: ws02
+      os: Windows
+      role: workstation
+    - name: dc01
+      os: Windows
+      role: domain-controller
+    - name: fs01
+      os: Windows
+      role: file-server
+  - name: soc
+    hosts:
+    - name: siem01
+      os: Linux
+      role: siem
+steps:
+- id: S1
+  title: 'Credential Access: Password Spraying'
+  tactic: credential-access
+  technique: T1110.003
+  description: 'The adversary emulation performs Password Spraying (T1110.003, Credential Access) against dc01 (domain-controller,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: dc01
+  duration_minutes: 15
+  expected_detections:
+  - User Account Authentication
+  trainee_tasks:
+  - Identify Password Spraying (T1110.003) activity on dc01 from User Account Authentication
+  - Propose and apply a containment action for dc01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1110.003
+- id: S2
+  title: 'Discovery: Domain Account'
+  tactic: discovery
+  technique: T1087.002
+  description: 'The adversary emulation performs Domain Account (T1087.002, Discovery) against ws01 (workstation,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: ws01
+  duration_minutes: 15
+  expected_detections:
+  - Command Execution
+  - Network Traffic Content
+  - Process Creation
+  trainee_tasks:
+  - Identify Domain Account (T1087.002) activity on ws01 from Command Execution, Network Traffic Content, Process
+    Creation
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1087.002
+- id: S3
+  title: 'Discovery: Network Share Discovery'
+  tactic: discovery
+  technique: T1135
+  description: 'The adversary emulation performs Network Share Discovery (T1135, Discovery) against ws01 (workstation,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: ws01
+  duration_minutes: 15
+  expected_detections:
+  - Command Execution
+  - Named Pipe Metadata
+  - Network Connection Creation
+  - Network Traffic Flow
+  - OS API Execution
+  - Process Creation
+  trainee_tasks:
+  - Identify Network Share Discovery (T1135) activity on ws01 from Command Execution, Named Pipe Metadata, Network
+    Connection Creation (+3 more)
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1135
+- id: S4
+  title: 'Lateral Movement: Remote Desktop Protocol'
+  tactic: lateral-movement
+  technique: T1021.001
+  description: 'The adversary emulation performs Remote Desktop Protocol (T1021.001, Lateral Movement) against fs01
+    (file-server, Windows). Planning level: the range operator selects an approved emulation from the range catalogue;
+    no procedure is specified here.'
+  target_host: fs01
+  duration_minutes: 15
+  expected_detections:
+  - Logon Session Creation
+  - Logon Session Metadata
+  - Network Connection Creation
+  - Process Creation
+  trainee_tasks:
+  - Identify Remote Desktop Protocol (T1021.001) activity on fs01 from Logon Session Creation, Logon Session Metadata,
+    Network Connection Creation (+1 more)
+  - Propose and apply a containment action for fs01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1021.001
+- id: S5
+  title: 'Lateral Movement: SMB/Windows Admin Shares'
+  tactic: lateral-movement
+  technique: T1021.002
+  description: 'The adversary emulation performs SMB/Windows Admin Shares (T1021.002, Lateral Movement) against
+    fs01 (file-server, Windows). Planning level: the range operator selects an approved emulation from the range
+    catalogue; no procedure is specified here.'
+  target_host: fs01
+  duration_minutes: 15
+  expected_detections:
+  - Logon Session Creation
+  - Network Connection Creation
+  - Process Creation
+  trainee_tasks:
+  - Identify SMB/Windows Admin Shares (T1021.002) activity on fs01 from Logon Session Creation, Network Connection
+    Creation, Process Creation
+  - Propose and apply a containment action for fs01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1021.002

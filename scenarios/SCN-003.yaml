@@ -1,0 +1,211 @@
+id: SCN-003
+title: Web application compromise to data exfiltration
+version: '1.0'
+attack_version: '19.2'
+level: advanced
+audience: purple-team
+duration_minutes: 110
+objectives:
+- 'Jointly emulate and detect activity across: Initial Access, Execution, Persistence, Privilege Escalation, Collection,
+  Command and Control, Exfiltration'
+- Map each observed event to its ATT&CK technique (T1190, T1059.004, T1505.003, T1068, T1005, T1560.001, T1071.001,
+  T1048)
+tags:
+- initial-access
+- execution
+- persistence
+- privilege-escalation
+- collection
+- command-and-control
+- exfiltration
+- linux-web
+environment:
+  preset: linux-web
+  segments:
+  - name: internet
+    hosts:
+    - name: attacker
+      os: Linux
+      role: attacker
+  - name: dmz
+    hosts:
+    - name: web01
+      os: Linux
+      role: web-server
+  - name: backend
+    hosts:
+    - name: db01
+      os: Linux
+      role: database
+  - name: soc
+    hosts:
+    - name: siem01
+      os: Linux
+      role: siem
+steps:
+- id: S1
+  title: 'Initial Access: Exploit Public-Facing Application'
+  tactic: initial-access
+  technique: T1190
+  description: 'The adversary emulation performs Exploit Public-Facing Application (T1190, Initial Access) against
+    web01 (web-server, Linux). Planning level: the range operator selects an approved emulation from the range catalogue;
+    no procedure is specified here.'
+  target_host: web01
+  duration_minutes: 10
+  expected_detections:
+  - Application Log Content
+  - Module Load
+  - Network Connection Creation
+  - Network Traffic Content
+  - Network Traffic Flow
+  - Process Creation
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1190 on web01; blue cell: detect it'
+  - Compare expected telemetry (Application Log Content, Module Load, Network Connection Creation (+3 more)) with
+    what the SIEM actually recorded
+  - Agree on one detection gap for T1190 and tune or write an analytic
+- id: S2
+  title: 'Execution: Unix Shell'
+  tactic: execution
+  technique: T1059.004
+  description: 'The adversary emulation performs Unix Shell (T1059.004, Execution) against web01 (web-server, Linux).
+    Planning level: the range operator selects an approved emulation from the range catalogue; no procedure is specified
+    here.'
+  target_host: web01
+  duration_minutes: 10
+  expected_detections:
+  - Command Execution
+  - Logon Session Creation
+  - Network Connection Creation
+  - Network Traffic Flow
+  - Process Creation
+  - Script Execution
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1059.004 on web01; blue cell: detect it'
+  - Compare expected telemetry (Command Execution, Logon Session Creation, Network Connection Creation (+3 more))
+    with what the SIEM actually recorded
+  - Agree on one detection gap for T1059.004 and tune or write an analytic
+- id: S3
+  title: 'Persistence: Web Shell'
+  tactic: persistence
+  technique: T1505.003
+  description: 'The adversary emulation performs Web Shell (T1505.003, Persistence) against web01 (web-server, Linux).
+    Planning level: the range operator selects an approved emulation from the range catalogue; no procedure is specified
+    here.'
+  target_host: web01
+  duration_minutes: 10
+  expected_detections:
+  - File Creation
+  - File Modification
+  - Logon Session Creation
+  - Network Traffic Content
+  - Process Creation
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1505.003 on web01; blue cell: detect it'
+  - Compare expected telemetry (File Creation, File Modification, Logon Session Creation (+2 more)) with what the
+    SIEM actually recorded
+  - Agree on one detection gap for T1505.003 and tune or write an analytic
+- id: S4
+  title: 'Privilege Escalation: Exploitation for Privilege Escalation'
+  tactic: privilege-escalation
+  technique: T1068
+  description: 'The adversary emulation performs Exploitation for Privilege Escalation (T1068, Privilege Escalation)
+    against web01 (web-server, Linux). Planning level: the range operator selects an approved emulation from the
+    range catalogue; no procedure is specified here.'
+  target_host: web01
+  duration_minutes: 10
+  expected_detections:
+  - Container Enumeration
+  - Driver Load
+  - Logon Session Creation
+  - Logon Session Metadata
+  - Module Load
+  - Process Access
+  - Process Creation
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1068 on web01; blue cell: detect it'
+  - Compare expected telemetry (Container Enumeration, Driver Load, Logon Session Creation (+4 more)) with what
+    the SIEM actually recorded
+  - Agree on one detection gap for T1068 and tune or write an analytic
+- id: S5
+  title: 'Collection: Data from Local System'
+  tactic: collection
+  technique: T1005
+  description: 'The adversary emulation performs Data from Local System (T1005, Collection) against db01 (database,
+    Linux). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: db01
+  duration_minutes: 10
+  expected_detections:
+  - Command Execution
+  - File Access
+  - File Creation
+  - Process Creation
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1005 on db01; blue cell: detect it'
+  - Compare expected telemetry (Command Execution, File Access, File Creation (+1 more)) with what the SIEM actually
+    recorded
+  - Agree on one detection gap for T1005 and tune or write an analytic
+- id: S6
+  title: 'Collection: Archive via Utility'
+  tactic: collection
+  technique: T1560.001
+  description: 'The adversary emulation performs Archive via Utility (T1560.001, Collection) against db01 (database,
+    Linux). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: db01
+  duration_minutes: 10
+  expected_detections:
+  - Command Execution
+  - File Creation
+  - Module Load
+  - Process Creation
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1560.001 on db01; blue cell: detect it'
+  - Compare expected telemetry (Command Execution, File Creation, Module Load (+1 more)) with what the SIEM actually
+    recorded
+  - Agree on one detection gap for T1560.001 and tune or write an analytic
+- id: S7
+  title: 'Command and Control: Web Protocols'
+  tactic: command-and-control
+  technique: T1071.001
+  description: 'The adversary emulation performs Web Protocols (T1071.001, Command and Control) against web01 (web-server,
+    Linux). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: web01
+  duration_minutes: 10
+  expected_detections:
+  - Command Execution
+  - Network Connection Creation
+  - Network Traffic Content
+  - Network Traffic Flow
+  - Process Creation
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1071.001 on web01; blue cell: detect it'
+  - Compare expected telemetry (Command Execution, Network Connection Creation, Network Traffic Content (+2 more))
+    with what the SIEM actually recorded
+  - Agree on one detection gap for T1071.001 and tune or write an analytic
+- id: S8
+  title: 'Exfiltration: Exfiltration Over Alternative Protocol'
+  tactic: exfiltration
+  technique: T1048
+  description: 'The adversary emulation performs Exfiltration Over Alternative Protocol (T1048, Exfiltration) against
+    db01 (database, Linux). Planning level: the range operator selects an approved emulation from the range catalogue;
+    no procedure is specified here.'
+  target_host: db01
+  duration_minutes: 10
+  expected_detections:
+  - Cloud Storage Access
+  - Command Execution
+  - File Access
+  - File Creation
+  - File Modification
+  - Network Connection Creation
+  - Network Traffic Content
+  - Network Traffic Flow
+  - Process Creation
+  trainee_tasks:
+  - 'Red cell: run the approved range-catalogue emulation of T1048 on db01; blue cell: detect it'
+  - Compare expected telemetry (Cloud Storage Access, Command Execution, File Access (+6 more)) with what the SIEM
+    actually recorded
+  - Agree on one detection gap for T1048 and tune or write an analytic

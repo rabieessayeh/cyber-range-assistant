@@ -1,0 +1,204 @@
+id: SCN-001
+title: Phishing to ransomware
+version: '1.0'
+attack_version: '19.2'
+level: intermediate
+audience: soc-analyst
+duration_minutes: 150
+objectives:
+- 'Detect and triage activity across: Initial Access, Execution, Persistence, Credential Access, Lateral Movement,
+  Impact'
+- Map each observed event to its ATT&CK technique (T1566.001, T1204.002, T1059.001, T1547.001, T1003.001, T1021.002,
+  T1486, T1490)
+tags:
+- initial-access
+- execution
+- persistence
+- credential-access
+- lateral-movement
+- impact
+- small-enterprise
+environment:
+  preset: small-enterprise
+  segments:
+  - name: internet
+    hosts:
+    - name: attacker
+      os: Linux
+      role: attacker
+  - name: dmz
+    hosts:
+    - name: web01
+      os: Linux
+      role: web-server
+    - name: mail01
+      os: Windows
+      role: mail-server
+  - name: corp-lan
+    hosts:
+    - name: ws01
+      os: Windows
+      role: workstation
+    - name: ws02
+      os: Windows
+      role: workstation
+    - name: dc01
+      os: Windows
+      role: domain-controller
+    - name: fs01
+      os: Windows
+      role: file-server
+  - name: soc
+    hosts:
+    - name: siem01
+      os: Linux
+      role: siem
+steps:
+- id: S1
+  title: 'Initial Access: Spearphishing Attachment'
+  tactic: initial-access
+  technique: T1566.001
+  description: 'The adversary emulation performs Spearphishing Attachment (T1566.001, Initial Access) against ws01
+    (workstation, Windows). Planning level: the range operator selects an approved emulation from the range catalogue;
+    no procedure is specified here.'
+  target_host: ws01
+  duration_minutes: 15
+  expected_detections:
+  - Application Log Content
+  - File Creation
+  - Network Connection Creation
+  - Network Traffic Flow
+  - Process Creation
+  trainee_tasks:
+  - Triage the SIEM alert for Spearphishing Attachment (T1566.001) on ws01
+  - 'Confirm the activity in the telemetry: Application Log Content, File Creation, Network Connection Creation
+    (+2 more)'
+  - Record severity, scope and an escalation decision in the ticket
+- id: S2
+  title: 'Execution: Malicious File'
+  tactic: execution
+  technique: T1204.002
+  description: 'The adversary emulation performs Malicious File (T1204.002, Execution) against ws01 (workstation,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: ws01
+  duration_minutes: 15
+  expected_detections:
+  - File Creation
+  - File Metadata
+  - Process Creation
+  trainee_tasks:
+  - Triage the SIEM alert for Malicious File (T1204.002) on ws01
+  - 'Confirm the activity in the telemetry: File Creation, File Metadata, Process Creation'
+  - Record severity, scope and an escalation decision in the ticket
+- id: S3
+  title: 'Execution: PowerShell'
+  tactic: execution
+  technique: T1059.001
+  description: 'The adversary emulation performs PowerShell (T1059.001, Execution) against ws01 (workstation, Windows).
+    Planning level: the range operator selects an approved emulation from the range catalogue; no procedure is specified
+    here.'
+  target_host: ws01
+  duration_minutes: 15
+  expected_detections:
+  - Command Execution
+  - Module Load
+  - Process Creation
+  - Process Metadata
+  trainee_tasks:
+  - Triage the SIEM alert for PowerShell (T1059.001) on ws01
+  - 'Confirm the activity in the telemetry: Command Execution, Module Load, Process Creation (+1 more)'
+  - Record severity, scope and an escalation decision in the ticket
+- id: S4
+  title: 'Persistence: Registry Run Keys / Startup Folder'
+  tactic: persistence
+  technique: T1547.001
+  description: 'The adversary emulation performs Registry Run Keys / Startup Folder (T1547.001, Persistence) against
+    ws01 (workstation, Windows). Planning level: the range operator selects an approved emulation from the range
+    catalogue; no procedure is specified here.'
+  target_host: ws01
+  duration_minutes: 15
+  expected_detections:
+  - File Creation
+  - Process Creation
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Triage the SIEM alert for Registry Run Keys / Startup Folder (T1547.001) on ws01
+  - 'Confirm the activity in the telemetry: File Creation, Process Creation, Windows Registry Key Modification'
+  - Record severity, scope and an escalation decision in the ticket
+- id: S5
+  title: 'Credential Access: LSASS Memory'
+  tactic: credential-access
+  technique: T1003.001
+  description: 'The adversary emulation performs LSASS Memory (T1003.001, Credential Access) against dc01 (domain-controller,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: dc01
+  duration_minutes: 15
+  expected_detections:
+  - File Creation
+  - Process Access
+  - Process Creation
+  - User Account Metadata
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Triage the SIEM alert for LSASS Memory (T1003.001) on dc01
+  - 'Confirm the activity in the telemetry: File Creation, Process Access, Process Creation (+2 more)'
+  - Record severity, scope and an escalation decision in the ticket
+- id: S6
+  title: 'Lateral Movement: SMB/Windows Admin Shares'
+  tactic: lateral-movement
+  technique: T1021.002
+  description: 'The adversary emulation performs SMB/Windows Admin Shares (T1021.002, Lateral Movement) against
+    fs01 (file-server, Windows). Planning level: the range operator selects an approved emulation from the range
+    catalogue; no procedure is specified here.'
+  target_host: fs01
+  duration_minutes: 15
+  expected_detections:
+  - Logon Session Creation
+  - Network Connection Creation
+  - Process Creation
+  trainee_tasks:
+  - Triage the SIEM alert for SMB/Windows Admin Shares (T1021.002) on fs01
+  - 'Confirm the activity in the telemetry: Logon Session Creation, Network Connection Creation, Process Creation'
+  - Record severity, scope and an escalation decision in the ticket
+- id: S7
+  title: 'Impact: Data Encrypted for Impact'
+  tactic: impact
+  technique: T1486
+  description: 'The adversary emulation performs Data Encrypted for Impact (T1486, Impact) against fs01 (file-server,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: fs01
+  duration_minutes: 15
+  expected_detections:
+  - Cloud Storage Modification
+  - Command Execution
+  - File Creation
+  - File Modification
+  - Process Creation
+  trainee_tasks:
+  - Triage the SIEM alert for Data Encrypted for Impact (T1486) on fs01
+  - 'Confirm the activity in the telemetry: Cloud Storage Modification, Command Execution, File Creation (+2 more)'
+  - Record severity, scope and an escalation decision in the ticket
+- id: S8
+  title: 'Impact: Inhibit System Recovery'
+  tactic: impact
+  technique: T1490
+  description: 'The adversary emulation performs Inhibit System Recovery (T1490, Impact) against fs01 (file-server,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: fs01
+  duration_minutes: 15
+  expected_detections:
+  - Cloud Storage Deletion
+  - Command Execution
+  - File Deletion
+  - Process Creation
+  - Service Metadata
+  - Snapshot Deletion
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Triage the SIEM alert for Inhibit System Recovery (T1490) on fs01
+  - 'Confirm the activity in the telemetry: Cloud Storage Deletion, Command Execution, File Deletion (+4 more)'
+  - Record severity, scope and an escalation decision in the ticket

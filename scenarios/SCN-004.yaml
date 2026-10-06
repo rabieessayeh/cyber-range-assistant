@@ -1,0 +1,166 @@
+id: SCN-004
+title: Defence impairment and log tampering
+version: '1.0'
+attack_version: '19.2'
+level: advanced
+audience: blue-team
+duration_minutes: 90
+objectives:
+- 'Detect, contain and harden against activity across: Initial Access, Defense Impairment'
+- Map each observed event to its ATT&CK technique (T1078.002, T1112, T1685, T1685.001, T1685.005, T1686.003)
+tags:
+- initial-access
+- defense-impairment
+- small-enterprise
+environment:
+  preset: small-enterprise
+  segments:
+  - name: internet
+    hosts:
+    - name: attacker
+      os: Linux
+      role: attacker
+  - name: dmz
+    hosts:
+    - name: web01
+      os: Linux
+      role: web-server
+    - name: mail01
+      os: Windows
+      role: mail-server
+  - name: corp-lan
+    hosts:
+    - name: ws01
+      os: Windows
+      role: workstation
+    - name: ws02
+      os: Windows
+      role: workstation
+    - name: dc01
+      os: Windows
+      role: domain-controller
+    - name: fs01
+      os: Windows
+      role: file-server
+  - name: soc
+    hosts:
+    - name: siem01
+      os: Linux
+      role: siem
+steps:
+- id: S1
+  title: 'Initial Access: Domain Accounts'
+  tactic: initial-access
+  technique: T1078.002
+  description: 'The adversary emulation performs Domain Accounts (T1078.002, Initial Access) against ws01 (workstation,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: ws01
+  duration_minutes: 10
+  expected_detections:
+  - Logon Session Metadata
+  - Network Connection Creation
+  - Process Creation
+  - User Account Authentication
+  trainee_tasks:
+  - Identify Domain Accounts (T1078.002) activity on ws01 from Logon Session Metadata, Network Connection Creation,
+    Process Creation (+1 more)
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1078.002
+- id: S2
+  title: 'Defense Impairment: Modify Registry'
+  tactic: defense-impairment
+  technique: T1112
+  description: 'The adversary emulation performs Modify Registry (T1112, Defense Impairment) against ws01 (workstation,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: ws01
+  duration_minutes: 10
+  expected_detections:
+  - Process Creation
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Identify Modify Registry (T1112) activity on ws01 from Process Creation, Windows Registry Key Modification
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1112
+- id: S3
+  title: 'Defense Impairment: Disable or Modify Tools'
+  tactic: defense-impairment
+  technique: T1685
+  description: 'The adversary emulation performs Disable or Modify Tools (T1685, Defense Impairment) against ws01
+    (workstation, Windows). Planning level: the range operator selects an approved emulation from the range catalogue;
+    no procedure is specified here.'
+  target_host: ws01
+  duration_minutes: 10
+  expected_detections:
+  - Cloud Service Modification
+  - Command Execution
+  - Host Status
+  - Process Creation
+  - Process Termination
+  - Service Creation
+  - Service Metadata
+  - Service Modification
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Identify Disable or Modify Tools (T1685) activity on ws01 from Cloud Service Modification, Command Execution,
+    Host Status (+6 more)
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1685
+- id: S4
+  title: 'Defense Impairment: Disable or Modify Windows Event Log'
+  tactic: defense-impairment
+  technique: T1685.001
+  description: 'The adversary emulation performs Disable or Modify Windows Event Log (T1685.001, Defense Impairment)
+    against ws01 (workstation, Windows). Planning level: the range operator selects an approved emulation from the
+    range catalogue; no procedure is specified here.'
+  target_host: ws01
+  duration_minutes: 10
+  expected_detections:
+  - Application Log Content
+  - Process Creation
+  - Service Metadata
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Identify Disable or Modify Windows Event Log (T1685.001) activity on ws01 from Application Log Content, Process
+    Creation, Service Metadata (+1 more)
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1685.001
+- id: S5
+  title: 'Defense Impairment: Clear Windows Event Logs'
+  tactic: defense-impairment
+  technique: T1685.005
+  description: 'The adversary emulation performs Clear Windows Event Logs (T1685.005, Defense Impairment) against
+    ws01 (workstation, Windows). Planning level: the range operator selects an approved emulation from the range
+    catalogue; no procedure is specified here.'
+  target_host: ws01
+  duration_minutes: 10
+  expected_detections:
+  - Application Log Content
+  - File Deletion
+  - Process Creation
+  trainee_tasks:
+  - Identify Clear Windows Event Logs (T1685.005) activity on ws01 from Application Log Content, File Deletion,
+    Process Creation
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1685.005
+- id: S6
+  title: 'Defense Impairment: Windows Host Firewall'
+  tactic: defense-impairment
+  technique: T1686.003
+  description: 'The adversary emulation performs Windows Host Firewall (T1686.003, Defense Impairment) against ws01
+    (workstation, Windows). Planning level: the range operator selects an approved emulation from the range catalogue;
+    no procedure is specified here.'
+  target_host: ws01
+  duration_minutes: 10
+  expected_detections:
+  - Network Connection Creation
+  - Process Creation
+  - Service Creation
+  - Windows Registry Key Creation
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Identify Windows Host Firewall (T1686.003) activity on ws01 from Network Connection Creation, Process Creation,
+    Service Creation (+2 more)
+  - Propose and apply a containment action for ws01 with the range operator
+  - Propose one detection or hardening improvement mapped to T1686.003

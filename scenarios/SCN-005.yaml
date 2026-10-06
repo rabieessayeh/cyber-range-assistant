@@ -1,0 +1,150 @@
+id: SCN-005
+title: Ransomware crisis exercise for management
+version: '1.0'
+attack_version: '19.2'
+level: beginner
+audience: management
+duration_minutes: 130
+objectives:
+- 'Make timely decisions during activity across: Initial Access, Exfiltration, Impact'
+- Map each observed event to its ATT&CK technique (T1566.002, T1567.002, T1489, T1486, T1490)
+tags:
+- initial-access
+- exfiltration
+- impact
+- small-enterprise
+environment:
+  preset: small-enterprise
+  segments:
+  - name: internet
+    hosts:
+    - name: attacker
+      os: Linux
+      role: attacker
+  - name: dmz
+    hosts:
+    - name: web01
+      os: Linux
+      role: web-server
+    - name: mail01
+      os: Windows
+      role: mail-server
+  - name: corp-lan
+    hosts:
+    - name: ws01
+      os: Windows
+      role: workstation
+    - name: ws02
+      os: Windows
+      role: workstation
+    - name: dc01
+      os: Windows
+      role: domain-controller
+    - name: fs01
+      os: Windows
+      role: file-server
+  - name: soc
+    hosts:
+    - name: siem01
+      os: Linux
+      role: siem
+steps:
+- id: S1
+  title: 'Initial Access: Spearphishing Link'
+  tactic: initial-access
+  technique: T1566.002
+  description: 'The adversary emulation performs Spearphishing Link (T1566.002, Initial Access) against ws01 (workstation,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: ws01
+  duration_minutes: 20
+  expected_detections:
+  - Application Log Content
+  - Network Connection Creation
+  - Network Traffic Content
+  - Network Traffic Flow
+  - Process Creation
+  trainee_tasks:
+  - Assess the business impact of Spearphishing Link on ws01 (workstation)
+  - Decide on escalation and communication (internal, regulator, customers)
+  - Identify the decision owner and the information needed from the SOC
+- id: S2
+  title: 'Exfiltration: Exfiltration to Cloud Storage'
+  tactic: exfiltration
+  technique: T1567.002
+  description: 'The adversary emulation performs Exfiltration to Cloud Storage (T1567.002, Exfiltration) against
+    fs01 (file-server, Windows). Planning level: the range operator selects an approved emulation from the range
+    catalogue; no procedure is specified here.'
+  target_host: fs01
+  duration_minutes: 20
+  expected_detections:
+  - Command Execution
+  - File Access
+  - Network Connection Creation
+  - Network Traffic Content
+  - Network Traffic Flow
+  - Process Creation
+  trainee_tasks:
+  - Assess the business impact of Exfiltration to Cloud Storage on fs01 (file-server)
+  - Decide on escalation and communication (internal, regulator, customers)
+  - Identify the decision owner and the information needed from the SOC
+- id: S3
+  title: 'Impact: Service Stop'
+  tactic: impact
+  technique: T1489
+  description: 'The adversary emulation performs Service Stop (T1489, Impact) against fs01 (file-server, Windows).
+    Planning level: the range operator selects an approved emulation from the range catalogue; no procedure is specified
+    here.'
+  target_host: fs01
+  duration_minutes: 20
+  expected_detections:
+  - File Deletion
+  - Logon Session Metadata
+  - Process Creation
+  - Process Termination
+  - Service Creation
+  - Service Metadata
+  trainee_tasks:
+  - Assess the business impact of Service Stop on fs01 (file-server)
+  - Decide on escalation and communication (internal, regulator, customers)
+  - Identify the decision owner and the information needed from the SOC
+- id: S4
+  title: 'Impact: Data Encrypted for Impact'
+  tactic: impact
+  technique: T1486
+  description: 'The adversary emulation performs Data Encrypted for Impact (T1486, Impact) against fs01 (file-server,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: fs01
+  duration_minutes: 20
+  expected_detections:
+  - Cloud Storage Modification
+  - Command Execution
+  - File Creation
+  - File Modification
+  - Process Creation
+  trainee_tasks:
+  - Assess the business impact of Data Encrypted for Impact on fs01 (file-server)
+  - Decide on escalation and communication (internal, regulator, customers)
+  - Identify the decision owner and the information needed from the SOC
+- id: S5
+  title: 'Impact: Inhibit System Recovery'
+  tactic: impact
+  technique: T1490
+  description: 'The adversary emulation performs Inhibit System Recovery (T1490, Impact) against fs01 (file-server,
+    Windows). Planning level: the range operator selects an approved emulation from the range catalogue; no procedure
+    is specified here.'
+  target_host: fs01
+  duration_minutes: 20
+  expected_detections:
+  - Cloud Storage Deletion
+  - Command Execution
+  - File Deletion
+  - Process Creation
+  - Service Metadata
+  - Snapshot Deletion
+  - Windows Registry Key Modification
+  trainee_tasks:
+  - Assess the business impact of Inhibit System Recovery on fs01 (file-server)
+  - Decide on escalation and communication (internal, regulator, customers)
+  - Identify the decision owner and the information needed from the SOC
