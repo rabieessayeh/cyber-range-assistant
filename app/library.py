@@ -31,7 +31,7 @@ def select(scenarios: list[dict[str, Any]], ids: list[str] | None) -> list[dict[
     by_id = {s["id"]: s for s in scenarios}
     missing = [i for i in ids if i not in by_id]
     if missing:
-        raise KeyError(f"unknown scenario ids {missing}; library has {sorted(by_id)}")
+        raise KeyError(f"unknown scenario ids {missing}; known: {sorted(by_id)}")
     return [by_id[i] for i in ids]
 
 

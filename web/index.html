@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyber Range Scenario Assistant</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #5d6673; --border: #d9dee5;
+    --accent: #1f5fbf; --accent-text: #ffffff; --chip: #eef2f8;
+    --cell-1: #dbe7fb; --cell-2: #aac6f3; --cell-3: #6f9de6; --cell-4: #2f68c9; --cell-strong-text: #ffffff;
+    --ok: #1d7a3e; --ok-bg: #e3f4e8; --warn: #8a5a00; --warn-bg: #fff3d6; --err: #b3261e; --err-bg: #fde7e5;
+    --highlight: #e8590c; --code-bg: #f0f2f5;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111418; --panel: #1a1e24; --text: #e6e9ee; --muted: #9aa4b2; --border: #2e353f;
+      --accent: #5b9bff; --accent-text: #0b1220; --chip: #252b34;
+      --cell-1: #1d3150; --cell-2: #24497e; --cell-3: #2f66b5; --cell-4: #5b9bff; --cell-strong-text: #0b1220;
+      --ok: #6fd28f; --ok-bg: #16301f; --warn: #f0c060; --warn-bg: #352a10; --err: #ff8a80; --err-bg: #3a1714;
+      --highlight: #ff922b; --code-bg: #12161b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.45; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; padding: 14px 16px;
+           border-bottom: 1px solid var(--border); background: var(--panel); }
+  header h1 { font-size: 18px; margin: 0; }
+  header .meta { color: var(--muted); font-size: 13px; }
+  main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px; padding: 16px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  section.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px;
+                  min-width: 0; }
+  h2 { font-size: 14px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  textarea { width: 100%; min-height: 84px; resize: vertical; font: inherit; padding: 8px; border-radius: 6px;
+             border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+  button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--border);
+           background: var(--chip); color: var(--text); padding: 6px 12px; }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button:disabled { opacity: .6; cursor: progress; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .chips button { font-size: 12px; padding: 4px 9px; border-radius: 14px; text-align: left; }
+  .answer { white-space: pre-wrap; word-wrap: break-word; margin: 0; }
+  .answer code, .trace code { background: var(--code-bg); padding: 0 3px; border-radius: 3px; }
+  .muted { color: var(--muted); }
+  .error { color: var(--err); background: var(--err-bg); padding: 8px; border-radius: 6px; }
+  .trace { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+  .trace li { border-left: 3px solid var(--ok); padding: 4px 8px; margin: 6px 0; background: var(--bg);
+              border-radius: 0 4px 4px 0; overflow-wrap: anywhere; }
+  .trace li.fail { border-left-color: var(--err); }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: -4px 0 12px; }
+  .tabs button { border: none; border-bottom: 2px solid transparent; background: none; border-radius: 0;
+                 padding: 8px 12px; color: var(--muted); }
+  .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab { display: none; } .tab.active { display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 8px;
+            align-items: center; }
+  .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle;
+        margin-right: 4px; }
+  .matrix { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; align-items: flex-start; }
+  .col { flex: 0 0 120px; border: 1px solid var(--border); border-radius: 6px; padding: 6px; background: var(--bg); }
+  .col h3 { font-size: 12px; margin: 0 0 6px; line-height: 1.25; min-height: 30px; }
+  .col h3 small { display: block; font-weight: 400; color: var(--muted); }
+  .col.uncovered { border: 2px dashed var(--err); background: var(--err-bg); }
+  .col.thin h3::after { content: " · thin"; color: var(--warn); font-weight: 400; }
+  .cell { font-size: 11px; border-radius: 4px; padding: 4px 5px; margin-bottom: 4px; line-height: 1.25;
+          border: 2px solid transparent; overflow-wrap: anywhere; }
+  .cell b { display: block; }
+  .cell.n1 { background: var(--cell-1); } .cell.n2 { background: var(--cell-2); }
+  .cell.n3 { background: var(--cell-3); color: var(--cell-strong-text); }
+  .cell.n4 { background: var(--cell-4); color: var(--cell-strong-text); }
+  .cell.hl { border-color: var(--highlight); }
+  .cell.new { background: var(--panel); border-style: dashed; }
+  .sugg { font-size: 11px; margin: 4px 0 0; padding-left: 14px; color: var(--err); }
+  .profile { margin: 0 0 10px; padding: 8px; border-radius: 6px; background: var(--warn-bg); color: var(--warn);
+             font-size: 13px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .badge.ok { color: var(--ok); background: var(--ok-bg); } .badge.bad { color: var(--err); background: var(--err-bg); }
+  .badge.warn { color: var(--warn); background: var(--warn-bg); }
+  pre.yaml { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px;
+             overflow: auto; max-height: 70vh; font-size: 12px; }
+  ul.msgs { margin: 6px 0; padding-left: 18px; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr { cursor: pointer; } tbody tr:hover { background: var(--bg); }
+  .table-wrap { overflow-x: auto; }
+  footer { padding: 8px 16px 20px; color: var(--muted); font-size: 12px; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cyber Range Scenario Assistant</h1>
+  <span class="meta" id="meta">loading…</span>
+</header>
+<main>
+  <section class="panel" aria-label="Assistant">
+    <h2>Ask</h2>
+    <textarea id="q" placeholder="e.g. Build a beginner SOC exercise on phishing and ransomware"></textarea>
+    <div class="row">
+      <button class="primary" id="ask">Ask</button>
+      <button id="btn-coverage" title="Direct tool call, no LLM">Coverage</button>
+      <button id="btn-gaps" title="Direct tool call, no LLM">Gap analysis</button>
+    </div>
+    <div class="row chips" id="examples"></div>
+    <h2 style="margin-top:14px">Answer</h2>
+    <div id="answer" class="muted">Ask a question, or use the Coverage / Gap analysis buttons (they work without the LLM).</div>
+    <h2 style="margin-top:14px">Tool calls</h2>
+    <ul class="trace" id="trace"><li class="muted" style="border:none">none yet</li></ul>
+  </section>
+
+  <section class="panel" aria-label="Results">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="matrix">ATT&amp;CK coverage</button>
+      <button role="tab" aria-selected="false" data-tab="scenario">Scenario</button>
+      <button role="tab" aria-selected="false" data-tab="library">Library</button>
+    </div>
+    <div class="tab active" id="tab-matrix">
+      <div class="legend">
+        <span><span class="sw" style="background:var(--cell-1)"></span>1 scenario</span>
+        <span><span class="sw" style="background:var(--cell-3)"></span>3+</span>
+        <span><span class="sw" style="border:2px solid var(--highlight)"></span>last scenario / result</span>
+        <span><span class="sw" style="border:2px dashed var(--err);background:var(--err-bg)"></span>uncovered tactic</span>
+        <span id="totals"></span>
+        <span>· scroll sideways for all 15 tactics →</span>
+      </div>
+      <div id="profile"></div>
+      <div class="matrix" id="matrix"></div>
+    </div>
+    <div class="tab" id="tab-scenario">
+      <div class="row" style="align-items:center">
+        <strong id="scn-title" class="muted">No scenario yet: build one or pick one in the Library.</strong>
+        <span id="scn-badge"></span>
+        <button id="download" hidden>Download YAML</button>
+      </div>
+      <div id="scn-msgs"></div>
+      <pre class="yaml" id="yaml" hidden></pre>
+    </div>
+    <div class="tab" id="tab-library">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Title</th><th>Level</th><th>Audience</th><th>Min</th><th>Env</th><th>Steps</th></tr></thead>
+          <tbody id="library"></tbody>
+        </table>
+      </div>
+      <p class="muted">Click a row to open the scenario and highlight its techniques.</p>
+    </div>
+  </section>
+</main>
+<footer>
+  Planning-level scenarios only: no exploit code, malware or attack instructions.
+  Contains MITRE ATT&amp;CK&reg; data, &copy; The MITRE Corporation, used under the
+  <a href="https://attack.mitre.org/resources/legal-and-branding/terms-of-use/">ATT&amp;CK Terms of Use</a>.
+</footer>
+
+<script>
+"use strict";
+const EXAMPLES = [
+  "Build an intermediate SOC exercise on the small enterprise: spearphishing attachment, PowerShell, LSASS memory dumping and data encrypted for impact",
+  "Which tactics does our library not cover, for Linux hosts?",
+  "Merge SCN-001 and SCN-002 into one purple-team day",
+  "Does the library cover this threat profile: T1566, T1059.001, T1486, T1595, T1071.001?",
+  "What telemetry detects T1685.005, and what replaced T1070.001?",
+  "Write me a working ransomware payload",
+];
+const $ = (id) => document.getElementById(id);
+const state = { matrix: null, gaps: null, highlight: [], newIds: [], yaml: null, scenarioId: null };
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Minimal, safe markdown: escape first, then **bold** and `code`.
+const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`([^`]+)`/g, "<code>$1</code>");
+
+async function api(path, body) {
+  const opts = body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {};
+  const res = await fetch(path, opts);
+  let data = null;
+  try { data = await res.json(); } catch { /* non-JSON error */ }
+  if (!res.ok) throw new Error((data && (data.error || data.detail)) || `HTTP ${res.status}`);
+  return data;
+}
+
+function selectTab(name) {
+  document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+  document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.id === `tab-${name}`));
+}
+
+function renderMatrix() {
+  const m = state.matrix;
+  if (!m) return;
+  const gaps = state.gaps;
+  const uncovered = new Map((gaps?.uncovered_tactics || []).map((g) => [g.tactic, g]));
+  const thin = new Set((gaps?.thin_tactics || []).map((g) => g.tactic));
+  const hl = new Set(state.highlight);
+  const libraryIds = new Set(m.scenarios.filter((id) => !state.newIds.includes(id)));
+  $("totals").textContent = `${m.totals.tactics_covered}/${m.totals.tactics} tactics, ${m.totals.techniques_covered} techniques covered`;
+  $("matrix").innerHTML = m.tactics.map((col) => {
+    const cells = col.techniques.map((t) => {
+      const inLib = t.scenarios.filter((id) => libraryIds.has(id)).length;
+      const cls = inLib === 0 ? "new" : `n${Math.min(inLib, 4)}`;
+      return `<div class="cell ${cls} ${hl.has(t.id) ? "hl" : ""}" title="${esc(t.name)} — ${esc(t.scenarios.join(", "))}">
+        <b>${esc(t.id)}</b>${esc(t.name)}</div>`;
+    }).join("");
+    const gap = uncovered.get(col.shortname);
+    const isUncovered = col.techniques.length === 0;
+    const sugg = gap && gap.suggestions.length
+      ? `<div class="muted" style="font-size:11px">Suggested:</div><ul class="sugg">${gap.suggestions.map((s) =>
+          `<li title="${s.detections} data components">${esc(s.id)} ${esc(s.name)}</li>`).join("")}</ul>`
+      : (isUncovered ? `<div class="sugg" style="padding:0">Not covered${gaps ? "" : " — run Gap analysis"}</div>` : "");
+    return `<div class="col ${isUncovered ? "uncovered" : ""} ${thin.has(col.shortname) ? "thin" : ""}">
+      <h3>${esc(col.name)}<small>${esc(col.id)} · ${col.techniques.length}</small></h3>${cells}${sugg}</div>`;
+  }).join("");
+  const p = gaps?.threat_profile;
+  $("profile").innerHTML = p ? `<div class="profile"><strong>Threat profile:</strong> ${p.covered.length}/${p.required} covered.
+    ${p.missing.length ? "Missing: " + p.missing.map((x) => `${esc(x.id)} ${esc(x.name)}`).join(", ") + "." : ""}
+    ${p.invalid.length ? " Invalid: " + p.invalid.map((x) => esc(x.reason)).join("; ") : ""}</div>` : "";
+}
+
+function renderScenario(yaml, validation, id) {
+  state.yaml = yaml; state.scenarioId = id;
+  $("scn-title").textContent = id ? `Scenario ${id}` : "Scenario";
+  $("scn-title").classList.toggle("muted", !yaml);
+  $("yaml").hidden = !yaml;
+  $("yaml").textContent = yaml || "";
+  $("download").hidden = !yaml;
+  if (validation) {
+    const w = validation.warnings.length;
+    $("scn-badge").innerHTML = validation.valid
+      ? `<span class="badge ${w ? "warn" : "ok"}">valid${w ? ` · ${w} warning${w > 1 ? "s" : ""}` : ""}</span>`
+      : `<span class="badge bad">invalid · ${validation.errors.length} errors</span>`;
+    const list = (items, label) => items.length ? `<div class="muted">${label}</div><ul class="msgs">${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+    $("scn-msgs").innerHTML = list(validation.errors, "Errors") + list(validation.warnings, "Warnings");
+  } else {
+    $("scn-badge").innerHTML = ""; $("scn-msgs").innerHTML = "";
+  }
+}
+
+function renderTrace(trace) {
+  $("trace").innerHTML = trace.length ? trace.map((t) =>
+    `<li class="${t.ok ? "" : "fail"}"><strong>${esc(t.tool)}</strong> <code>${esc(JSON.stringify(t.arguments))}</code>
+      ${t.ok ? "" : `<div>${esc(t.error)}</div>`}</li>`).join("")
+    : `<li class="muted" style="border:none">no tool calls</li>`;
+}
+
+function applyUi(ui) {
+  if (!ui) return;
+  state.matrix = ui.matrix || state.matrix;
+  state.newIds = ui.session_scenarios || [];
+  if (ui.gaps) state.gaps = ui.gaps;
+  if (ui.highlight && ui.highlight.length) state.highlight = ui.highlight;
+  renderMatrix();
+  if (ui.yaml) { renderScenario(ui.yaml, ui.validation, ui.scenario_id); selectTab("scenario"); }
+  else if (ui.validation) { renderScenario(state.yaml, ui.validation, ui.scenario_id); selectTab("scenario"); }
+  else selectTab("matrix");
+}
+
+async function busy(fn) {
+  const buttons = document.querySelectorAll("button.primary, #btn-coverage, #btn-gaps");
+  buttons.forEach((b) => (b.disabled = true));
+  try { await fn(); }
+  catch (e) { $("answer").innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+  finally { buttons.forEach((b) => (b.disabled = false)); }
+}
+
+async function ask() {
+  const question = $("q").value.trim();
+  if (!question) return;
+  await busy(async () => {
+    $("answer").innerHTML = `<span class="muted">Thinking…</span>`;
+    const data = await api("/ask", { question });
+    $("answer").innerHTML = `<p class="answer">${md(data.answer)}</p>`;
+    renderTrace(data.trace);
+    applyUi(data.ui);
+  });
+}
+
+async function directTool(tool, args, label) {
+  await busy(async () => {
+    const data = await api("/tools", { tool, args });
+    renderTrace([{ tool, arguments: args, ok: true }]);
+    const t = data.ui.matrix.totals;
+    const g = data.result.uncovered_tactics;
+    $("answer").innerHTML = `<p class="answer">${esc(label)}: ${t.tactics_covered}/${t.tactics} tactics and ${t.techniques_covered} techniques covered by the library.` +
+      (g ? ` Uncovered: ${g.map((x) => esc(x.name)).join(", ") || "none"}; thin: ${data.result.thin_tactics.map((x) => esc(x.name)).join(", ") || "none"}.` : "") +
+      ` <span class="muted">(direct tool call, no LLM)</span></p>`;
+    if (tool === "coverage") state.highlight = [];
+    applyUi(data.ui);
+  });
+}
+
+async function openScenario(id) {
+  await busy(async () => {
+    const data = await api(`/scenarios/${encodeURIComponent(id)}`);
+    state.highlight = data.scenario.steps.map((s) => s.technique);
+    renderMatrix();
+    renderScenario(data.yaml, data.validation, id);
+    selectTab("scenario");
+  });
+}
+
+async function init() {
+  $("examples").innerHTML = EXAMPLES.map((e, i) => `<button data-i="${i}">${esc(e)}</button>`).join("");
+  $("examples").addEventListener("click", (ev) => {
+    const b = ev.target.closest("button"); if (!b) return;
+    $("q").value = EXAMPLES[Number(b.dataset.i)]; ask();
+  });
+  $("ask").addEventListener("click", ask);
+  $("q").addEventListener("keydown", (ev) => { if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) ask(); });
+  $("btn-coverage").addEventListener("click", () => directTool("coverage", {}, "Coverage"));
+  $("btn-gaps").addEventListener("click", () => directTool("gap_analysis", {}, "Gap analysis"));
+  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => selectTab(b.dataset.tab)));
+  $("download").addEventListener("click", () => {
+    const url = URL.createObjectURL(new Blob([state.yaml], { type: "application/yaml" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: `${state.scenarioId || "scenario"}.yaml` });
+    a.click(); URL.revokeObjectURL(url);
+  });
+  $("library").addEventListener("click", (ev) => { const tr = ev.target.closest("tr"); if (tr) openScenario(tr.dataset.id); });
+
+  try {
+    const [health, matrix, scenarios] = await Promise.all([api("/health"), api("/coverage"), api("/scenarios")]);
+    $("meta").textContent = `ATT&CK Enterprise ${health.attack_version} · ${health.techniques} techniques · ${health.scenarios} scenarios · ` +
+      (health.llm_configured ? `LLM: ${health.llm_model}` : "LLM not configured (direct tools only)");
+    state.matrix = matrix;
+    renderMatrix();
+    $("library").innerHTML = scenarios.map((s) => `<tr data-id="${esc(s.id)}"><td>${esc(s.id)}</td><td>${esc(s.title)}</td>
+      <td>${esc(s.level)}</td><td>${esc(s.audience)}</td><td>${s.duration_minutes}</td><td>${esc(s.environment)}</td>
+      <td>${s.techniques.length}</td></tr>`).join("");
+  } catch (e) {
+    $("meta").textContent = `API unavailable: ${e.message}`;
+  }
+}
+init();
+</script>
+</body>
+</html>
